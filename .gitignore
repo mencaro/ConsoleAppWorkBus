@@ -1,0 +1,17 @@
+*.nupkg
+.vs/
+
+ClassLibraryBusExpansion/bin/
+ClassLibraryBusExpansion/obj/
+
+ConsoleAppBus/bin/
+ConsoleAppBus/obj/
+
+ConsoleAppConsumerBus/bin/
+ConsoleAppConsumerBus/obj/
+
+ConsoleAppProducerBus/bin/
+ConsoleAppProducerBus/obj/
+
+ConsoleAppTestStart/bin/
+ConsoleAppTestStart/obj/

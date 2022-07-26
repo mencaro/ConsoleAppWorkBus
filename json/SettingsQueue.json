@@ -1,0 +1,43 @@
+{
+  "Id": 99,
+  "Active": true,
+  "sQueueBus": 
+  [
+	{
+		"_Id": "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43",
+		"_NameQueue": "s1",
+		"_DescriptionQueue": "d1",
+		"_LengthQueue": 99
+	},
+	{
+		"_Id": "028991f1-7df6-4e20-9aef-280ae14f5a16",
+		"_NameQueue": "s2",
+		"_DescriptionQueue": "d2",
+		"_LengthQueue": 10
+	},
+	{
+		"_Id": "74b0026f-4fcf-4b99-b31b-8d443a2f32e6",
+		"_NameQueue": "s3",
+		"_DescriptionQueue": "d3",
+		"_LengthQueue": 999
+	},
+	{
+		"_Id": "74b0026f-4fcf-4b99-b31b-8d443a2f32e7",
+		"_NameQueue": "s4",
+		"_DescriptionQueue": "d3",
+		"_LengthQueue": 999
+	},
+	{
+		"_Id": "74b0026f-4fcf-4b99-b31b-8d443a2f32e8",
+		"_NameQueue": "s5",
+		"_DescriptionQueue": "d3",
+		"_LengthQueue": 999
+	},
+	{
+		"_Id": "74b0026f-4fcf-4b99-b31b-8d443a2f32e9",
+		"_NameQueue": "s3",
+		"_DescriptionQueue": "d6",
+		"_LengthQueue": 999
+	}
+  ]
+}
