@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClassLibraryBusExpansion;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -12,6 +13,7 @@ namespace ConsoleAppBus
         /// потока для прослушивания шлюза
         /// </summary>
         static Thread listenThreadGateway;
+        static Thread listenThreadProducer;
         /// <summary>
         /// Настройки
         /// </summary>
@@ -24,6 +26,7 @@ namespace ConsoleAppBus
         /// Очереди на шине
         /// </summary>
         System.Collections.Concurrent.ConcurrentDictionary<string, ElementQueue> BusQuueues = null;
+        System.Collections.Concurrent.ConcurrentDictionary<string, GatewayClientObjectBinary> DicGatewayClientObject = null;
         public Bus()
         {
             _settingsBase = new SettingsBase();
@@ -68,13 +71,18 @@ namespace ConsoleAppBus
         {
             gateway = new Gateway(this);
             gateway.scb = SettingsBase.GetConnectiongSettings();
+            //==================================================
             listenThreadGateway = new Thread(new ThreadStart(gateway.Listen));
-            listenThreadGateway.Start(); //старт потока
+            listenThreadGateway.Start(); 
+            //==========================
+            //listenThreadProducer = new Thread(new ThreadStart(gateway.Listen));
+            //listenThreadGateway.Start(); 
         }
         private void CreateQueue()
         {
             if (SettingsBase != null)
             {
+                DicGatewayClientObject = new System.Collections.Concurrent.ConcurrentDictionary<string, GatewayClientObjectBinary>();
                 BusQuueues = new System.Collections.Concurrent.ConcurrentDictionary<string, ElementQueue>();
                 List<QueueBus> queueBuses = SettingsBase.GetQueueBus();
                 foreach(QueueBus queueBus in queueBuses)
@@ -94,7 +102,7 @@ namespace ConsoleAppBus
             {
                 if (BusQuueues != null)
                 {
-                    BusQuueues.TryGetValue(messageGateway.IdQueueMessage, out var elementQueue);
+                    BusQuueues.TryGetValue(messageGateway.QueueMessage, out var elementQueue);
                     if (elementQueue != null)
                     {
                         elementQueue.AddMessageToQueue(messageGateway);
@@ -108,7 +116,7 @@ namespace ConsoleAppBus
             {
                 if (BusQuueues != null)
                 {
-                    BusQuueues.TryGetValue(gcob.GetMessageGateway().IdQueueMessage, out var elementQueue);
+                    BusQuueues.TryGetValue(gcob.GetMessageGateway().QueueMessage, out var elementQueue);
                     if (elementQueue != null)
                     {
                         elementQueue.AddGatewayClientObjectToQueue(gcob);
@@ -117,6 +125,33 @@ namespace ConsoleAppBus
             }
         }
 
+        public void AddGatewayClientObjectBinaryToDic(GatewayClientObjectBinary gcob)
+        {
+            if (gcob != null)
+            {
+                if (DicGatewayClientObject != null)
+                {
+                    DicGatewayClientObject.TryGetValue(gcob.GetMessageGateway()._idProducer, out var elementDic);
+                    if (elementDic == null)
+                    {
+                        AddToDic(gcob.GetMessageGateway()._idProducer, gcob);
+
+                        DicGatewayClientObject.TryGetValue(gcob.GetMessageGateway()._idProducer, out var new_elementDic);
+                        if (new_elementDic != null)
+                        {
+                            Task GatewayTask = new Task(new_elementDic.ProcessListen);
+                            GatewayTask.Start();
+                        }
+                    }
+                    AddMessageToQueue(gcob.GetMessageGateway());
+                }
+            }
+        }
+        public void AddToDic(string Producer, GatewayClientObjectBinary gcob)
+        {
+            Console.WriteLine("Внесение отправителя: ");
+            DicGatewayClientObject.TryAdd(Producer, gcob);
+        }
         //public void RoutingMessageGatewayClientObjectToBus(GatewayClientObjectBinary gcob)
         //{
         //    if (gcob.GetMessageGateway() == null)
@@ -135,7 +170,7 @@ namespace ConsoleAppBus
         //        }
         //    }
         //}
-        
+
     }
 
     public class ElementQueue
@@ -207,7 +242,7 @@ namespace ConsoleAppBus
                     Console.WriteLine("Сообщения есть: ");
                     if (QueueMessageInElementQueue.TryDequeue(out var mes))
                     {
-                        Console.WriteLine("Отправление сообщения подписчикам: " + mes.IdGenerateGuid);
+                        Console.WriteLine("Отправление сообщения подписчикам: " + mes.GenerateGuid);
                         for (int i = 0; i < SubscriptionClient.Count; i++)
                         {
                             SubscriptionClient[i].PushMessage(mes);

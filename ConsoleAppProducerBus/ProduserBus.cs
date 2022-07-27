@@ -1,8 +1,10 @@
-﻿using System;
+﻿using ClassLibraryBusExpansion;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 
 namespace ConsoleAppProducerBus
@@ -13,6 +15,7 @@ namespace ConsoleAppProducerBus
         int _PORT;
         string _IdMessage;
         string _Message;
+        NetworkStream stream;
         public ProduserBus(string IP, int Port)
         {
             _PORT = Port;
@@ -27,32 +30,22 @@ namespace ConsoleAppProducerBus
         public void Process()
         {
             TcpClient client = null;
+            client = new TcpClient();
+            Guid _guid = Guid.NewGuid();
+            _guid = Guid.NewGuid();
             try
             {
+                client.Connect(_ADDRESS, _PORT);  // подключение клиента
+                stream = client.GetStream(); // получаем поток
                 while (true)
                 {
                     Console.Write("Начало отправки: ");
-                    client = new TcpClient(_ADDRESS, _PORT);
-                    NetworkStream stream = client.GetStream();
-                    BinaryWriter writer = new BinaryWriter(stream);
-
-                    writer.Write(_IdMessage);
-                    writer.Write("PointToPoint");
-                    writer.Write(_Message);
-                    writer.Flush();
-
-                    BinaryReader reader = new BinaryReader(stream);
-                    string accountNumber = reader.ReadString();
-                    Console.WriteLine("Номер вашего сообщения " + accountNumber);
-                    
-                    Console.Write("Отправленно: ");
-
-                    reader.Close();
-                    writer.Close();
-
-                    stream.Close();
-                    client.Close();
-
+                    //=================================
+                    MessageGateway mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "PointToPoint", "123456789");
+                    string message = JsonSerializer.Serialize(mesObj);
+                    byte[] data = Encoding.Unicode.GetBytes(message);
+                    stream.Write(data, 0, data.Length);
+                    //=================================
                     Thread.Sleep(5000);
                 }
             }

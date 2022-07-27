@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
 using System.IO;
+using ClassLibraryBusExpansion;
 
 namespace ConsoleAppBus
 {
@@ -75,6 +76,18 @@ namespace ConsoleAppBus
             }
         }
 
+        public MessageGateway GetMessageQueue(string mes)
+        {
+            if (mes.Length > 0)
+            {
+                return JsonConvert.DeserializeObject<MessageGateway>(mes);
+            }
+            else
+            {
+                Console.WriteLine("GetMessageQueue not deserealize");
+            }
+            return null;
+        }
         public List<QueueBus> GetQueueBus()
         {
             return settingsQueueBus.sQueueBus;

@@ -21,13 +21,13 @@ namespace ConsoleAppProducerBus
             }
             else
             {
-                Console.WriteLine("Введите индетификатор сообщеня: ");
-                id = Console.ReadLine();
-                Console.WriteLine("Введите сообщеня: ");
-                mess = Console.ReadLine();
+                //Console.WriteLine("Введите индетификатор сообщеня: ");
+                //id = Console.ReadLine();
+                //Console.WriteLine("Введите сообщеня: ");
+                //mess = Console.ReadLine();
             }
             
-            pb.SetMessage(id, mess);
+            //pb.SetMessage(id, mess);
 
             Task clientTask = new Task(pb.Process);
             clientTask.Start();

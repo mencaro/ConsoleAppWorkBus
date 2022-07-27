@@ -1,7 +1,9 @@
-﻿using System;
+﻿using ClassLibraryBusExpansion;
+using System;
 using System.IO;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,36 +18,24 @@ namespace ConsoleAppConsumerBus
 
         static void Main(string[] args)
         {
-            //Console.WriteLine("Введите индетификатор очереди на которую следует подписаться: ");
-            //string id_queue = Console.ReadLine();
-            //ConsumerBus сb = new ConsumerBus(ADDRESS, PORT, id_queue);
-            //Task TaskSubscrube = new Task(сb.Process);
-            //TaskSubscrube.Start();
-            //Thread.Sleep(5000);
-            //Console.WriteLine("Начать прием сообщений: ");
-            //Task TaskMessage = new Task(сb.GetMessageFromQueue);
-            //TaskMessage.Start();
-            //Console.WriteLine("Читаем: ");
-            //Console.ReadLine();
-            ////=======================
+            Console.Write("Запустить ?");
+            Console.ReadLine();
+            MessageGateway mesObj = new MessageGateway("", "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "Subscription", "");
             client = new TcpClient();
             try
             {
-                client.Connect(ADDRESS, PORT); //подключение клиента
-                //stream = client.GetStream(); // получаем поток
+                client.Connect(ADDRESS, PORT);  // подключение клиента
+                stream = client.GetStream(); // получаем поток
 
-                Console.WriteLine("Введите индетификатор очереди на которую следует подписаться: ");
-                string id_queue = Console.ReadLine();
-                ConsumerBus сb = new ConsumerBus(client, ADDRESS, PORT, id_queue);
-                сb.Process();
-                //string message = userName;
-                //byte[] data = Encoding.Unicode.GetBytes(message);
-                //stream.Write(data, 0, data.Length);
+                string message = JsonSerializer.Serialize(mesObj);
+                byte[] data = Encoding.Unicode.GetBytes(message);
+                stream.Write(data, 0, data.Length);
 
-                Thread.Sleep(1000);
                 // запускаем новый поток для получения данных
-                Task TaskMessage = new Task(сb.GetMessageFromQueue);
-                TaskMessage.Start();
+                Thread receiveThread = new Thread(new ThreadStart(ReceiveMessage));
+                receiveThread.Start(); //старт потока
+                //Console.WriteLine("Добро пожаловать, {0}", userName);
+                //SendMessage();
                 Console.ReadLine();
             }
             catch (Exception ex)
@@ -55,6 +45,34 @@ namespace ConsoleAppConsumerBus
             finally
             {
                 Disconnect();
+            }
+        }
+        // получение сообщений
+        static void ReceiveMessage()
+        {
+            while (true)
+            {
+                try
+                {
+                    byte[] data = new byte[64]; // буфер для получаемых данных
+                    StringBuilder builder = new StringBuilder();
+                    int bytes = 0;
+                    do
+                    {
+                        bytes = stream.Read(data, 0, data.Length);
+                        builder.Append(Encoding.Unicode.GetString(data, 0, bytes));
+                    }
+                    while (stream.DataAvailable);
+
+                    string message = builder.ToString();
+                    Console.WriteLine(message);//вывод сообщения
+                }
+                catch
+                {
+                    Console.WriteLine("Подключение прервано!"); //соединение было прервано
+                    Console.ReadLine();
+                    Disconnect();
+                }
             }
         }
         static void Disconnect()
