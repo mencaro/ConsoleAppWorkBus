@@ -134,14 +134,16 @@ namespace ConsoleAppBus
                 
                     if (client != null)
                         client.Close();
+
+                    //-------------------------------------------
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Клиент вышел из Process");
+                    Console.ResetColor();
+                    //-------------------
                 }
                 else
                 {
-                    //-------------------------------------------
-                    Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Клиент сохранен");
-                    Console.ResetColor();
-                    //-------------------
+                    
                 }
             }
         }

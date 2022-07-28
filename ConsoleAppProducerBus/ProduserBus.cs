@@ -13,8 +13,9 @@ namespace ConsoleAppProducerBus
     {
         string _ADDRESS;
         int _PORT;
-        string _IdMessage;
-        string _Message;
+        string _GuidQueue;
+        string _TypeMessage;
+        string _TileMess;
         NetworkStream stream;
         public ProduserBus(string IP, int Port)
         {
@@ -22,13 +23,14 @@ namespace ConsoleAppProducerBus
             _ADDRESS = IP;
         }
 
-        public void SetMessage(string IdMessage, string Message)
+        public void SetMessage(string GuidQueue, string TypeMessage)
         {
-            _IdMessage = IdMessage;
-            _Message = Message; 
+            _GuidQueue = GuidQueue;
+            _TypeMessage = TypeMessage; 
         }
         public void Process()
         {
+            Random rnd = new Random();
             TcpClient client = null;
             client = new TcpClient();
             Guid _guid = Guid.NewGuid();
@@ -37,7 +39,8 @@ namespace ConsoleAppProducerBus
             {
                 client.Connect(_ADDRESS, _PORT);  // подключение клиента
                 stream = client.GetStream(); // получаем поток
-                MessageGateway mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "PointToPoint", "123456789");
+                _TileMess = "123456789";
+                MessageGateway mesObj = new MessageGateway(_guid.ToString(), _GuidQueue, _TypeMessage, _TileMess);
                 while (true)
                 {
                     Console.Write("Начало отправки: ");
@@ -47,6 +50,7 @@ namespace ConsoleAppProducerBus
                     stream.Write(data, 0, data.Length);
                     //=================================
                     Thread.Sleep(1000);
+                    _TileMess = rnd.Next().ToString();
                 }
             }
             catch (Exception ex)

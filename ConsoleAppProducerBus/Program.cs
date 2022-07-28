@@ -12,22 +12,20 @@ namespace ConsoleAppProducerBus
         static void Main(string[] args)
         {
             ProduserBus pb = new ProduserBus(ADDRESS, PORT);
+
             if (args.Length > 0)
             {
                 Console.WriteLine(args[0].ToString());
                 id = args[0];
                 Random rnd = new Random();
                 mess = rnd.Next().ToString();
+
+                pb.SetMessage(id, mess);
             }
             else
             {
-                //Console.WriteLine("Введите индетификатор сообщеня: ");
-                //id = Console.ReadLine();
-                //Console.WriteLine("Введите сообщеня: ");
-                //mess = Console.ReadLine();
+                pb.SetMessage("d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "PointToPoint");
             }
-            
-            //pb.SetMessage(id, mess);
 
             Task clientTask = new Task(pb.Process);
             clientTask.Start();
