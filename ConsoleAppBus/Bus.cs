@@ -135,13 +135,7 @@ namespace ConsoleAppBus
                     if (elementDic == null)
                     {
                         AddToDic(gcob.GetMessageGateway()._idProducer, gcob);
-
                         DicGatewayClientObject.TryGetValue(gcob.GetMessageGateway()._idProducer, out var new_elementDic);
-                        if (new_elementDic != null)
-                        {
-                            Task GatewayTask = new Task(new_elementDic.ProcessListen);
-                            GatewayTask.Start();
-                        }
                     }
                     AddMessageToQueue(gcob.GetMessageGateway());
                 }
@@ -239,13 +233,29 @@ namespace ConsoleAppBus
             {
                 if ((QueueMessageInElementQueue.Count > 0))
                 {
-                    Console.WriteLine("Сообщения есть: ");
+                    Console.WriteLine("Сообщения в очереди: = " + QueueMessageInElementQueue.Count.ToString());
                     if (QueueMessageInElementQueue.TryDequeue(out var mes))
                     {
-                        Console.WriteLine("Отправление сообщения подписчикам: " + mes.GenerateGuid);
+                        
                         for (int i = 0; i < SubscriptionClient.Count; i++)
                         {
-                            SubscriptionClient[i].PushMessage(mes);
+                            if (SubscriptionClient[i].client.Connected)
+                            {
+                                Console.WriteLine("Отправление сообщения подписчикам: " + mes.GenerateGuid);
+                                SubscriptionClient[i].PushMessage(mes);
+                            }
+                            else
+                            {
+                                //-----------------------------------------
+                                Console.ForegroundColor = ConsoleColor.Red;
+                                Console.WriteLine("Отключения подписчика");
+                                Console.ResetColor();
+                                //-------------------
+                                SubscriptionClient[i].IsConnected = false;
+                                SubscriptionClient[i].client.Close();
+                                SubscriptionClient.RemoveAt(i);
+                                i--;
+                            }
                         }
                     }
                 }

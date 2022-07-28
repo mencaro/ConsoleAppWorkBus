@@ -4,6 +4,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ClassLibraryBusExpansion;
 using Newtonsoft.Json;
@@ -64,66 +65,61 @@ namespace ConsoleAppBus
 
     public class GatewayClientObjectBinary
     {
+        private bool _IsConnected = false;
+        public bool IsConnected
+        {
+            get { return _IsConnected; }
+            set { _IsConnected = value; }
+        }
         public TcpClient client;
+        public DateTime LastContactTime { get; set; }
         private Bus _OuterBus = null;
         private MessageGateway _messageGateway = null;
-        private MessageGateway _messageGateway2 = null;
         protected internal NetworkStream Stream { get; private set; }
+        protected internal NetworkStream StreamOut { get; private set; }
         public GatewayClientObjectBinary(TcpClient tcpClient, Bus outerBus)
         {
             client = tcpClient;
             _OuterBus = outerBus;
+            _IsConnected = true;
         }
-        public void ProcessListen()
+        private void ReceivingMessage()
         {
-            try
-            {
-                while(true)
-                {
-                    _messageGateway2 = _OuterBus.SettingsBase.GetMessageQueue(GetMessage());
-                    _OuterBus.AddMessageToQueue(GetMessageGateway2());
-                    BroadcastMessage(JsonConvert.SerializeObject(_messageGateway2));
-                }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-            }
-            finally
-            {
-                if ((GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.Subscription) || (GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.PointToPoint))
-                {
-                    if (Stream != null)
-                        Stream.Close();
-
-                    if (client != null)
-                        client.Close();
-                }
-            }
+            // создаем по полученным от клиента данным объект счета
+            string s1 = GetMessage();
+            _messageGateway = _OuterBus.SettingsBase.GetMessageQueue(s1);
+            //========================================================================================
+            Console.WriteLine("{0} зарегистрировано сообщение: {1}, типа {2}", _messageGateway.QueueMessage, _messageGateway.TailMessage, _messageGateway.TypeMessage);
+            //=========================================================================================================================================================
+            //BroadcastMessage(JsonConvert.SerializeObject(_messageGateway));
+            RoutingMessageGatewayClientObjectToBus();
+            Thread.Sleep(10);
         }
         public void Process()
         {
             try
             {
                 Stream = client.GetStream();
-                //==========================
-                //====================================================
-                // создаем по полученным от клиента данным объект счета
-                string s1 = GetMessage();
-                _messageGateway = _OuterBus.SettingsBase.GetMessageQueue(s1);
-                //========================================================================================
-                Console.WriteLine("{0} зарегистрировано сообщение: {1}, типа {2}", _messageGateway.QueueMessage, _messageGateway.TailMessage, _messageGateway.TypeMessage);
-                //=========================================================================================================================================================
-                //BroadcastMessage(JsonConvert.SerializeObject(_messageGateway));
-                RoutingMessageGatewayClientObjectToBus();
-
-                while (true)
+                ReceivingMessage();
+                if ( (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.PointToPoint))
                 {
-                    string s2 = GetMessage();
-                    _messageGateway = _OuterBus.SettingsBase.GetMessageQueue(s2);
-                    RoutingMessageGatewayClientObjectToBus();
-                    //BroadcastMessage(JsonConvert.SerializeObject(_messageGateway2));
-                }
+                    while (true)
+                    {
+                        try
+                        {
+                            ReceivingMessage();
+                        }
+                        catch
+                        {
+                            //-----------------------------------------
+                            Console.ForegroundColor = ConsoleColor.Red;
+                            Console.WriteLine("покинул очередь");
+                            Console.ResetColor();
+                            //-------------------
+                            break;
+                        }
+                    }
+        }
             }
             catch (Exception ex)
             {
@@ -131,7 +127,7 @@ namespace ConsoleAppBus
             }
             finally
             {
-                if ((GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.Subscription) || (GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.PointToPoint))
+                if ((GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.Subscription) && (GetMessageGateway().TypeMessage != ClassLibraryBusExpansion.Routing_Key.PointToPoint))
                 {
                     if (Stream != null)
                         Stream.Close();
@@ -141,7 +137,11 @@ namespace ConsoleAppBus
                 }
                 else
                 {
+                    //-------------------------------------------
+                    Console.ForegroundColor = ConsoleColor.Green;
                     Console.WriteLine("Клиент сохранен");
+                    Console.ResetColor();
+                    //-------------------
                 }
             }
         }
@@ -153,8 +153,8 @@ namespace ConsoleAppBus
                 if (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.PointToPoint)
                 {
                     Console.WriteLine("Регистрация Produser: ");
-                    _OuterBus.AddGatewayClientObjectBinaryToDic(this);
-                    //_OuterBus.AddMessageToQueue(GetMessageGateway());
+                    //_OuterBus.AddGatewayClientObjectBinaryToDic(this);
+                    _OuterBus.AddMessageToQueue(GetMessageGateway());
                 }
                 else if (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.Subscription)
                 {
@@ -174,22 +174,25 @@ namespace ConsoleAppBus
         }
         private void Push(object mes)
         {
-            Stream = client.GetStream();
+            try
+            {
+                StreamOut = client.GetStream();
 
-            string message = ((MessageGateway)mes).TailMessage;
-            byte[] data = Encoding.Unicode.GetBytes(message);
-            Stream.Write(data, 0, data.Length);
+                string message = ((MessageGateway)mes).TailMessage;
+                byte[] data = Encoding.Unicode.GetBytes(message);
+                StreamOut.Write(data, 0, data.Length);
 
-            Console.Write("Отправленно подписчику: ");
+                Console.Write("Отправленно подписчику: ");
+            }
+            catch
+            {
+                Console.WriteLine("Подписчик отключился");
+            }
         }
 
         public MessageGateway GetMessageGateway()
         {
             return _messageGateway;
-        }
-        public MessageGateway GetMessageGateway2()
-        {
-            return _messageGateway2;
         }
         //
         // чтение входящего сообщения и преобразование в строку

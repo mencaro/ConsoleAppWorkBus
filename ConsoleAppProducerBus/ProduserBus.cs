@@ -37,16 +37,16 @@ namespace ConsoleAppProducerBus
             {
                 client.Connect(_ADDRESS, _PORT);  // подключение клиента
                 stream = client.GetStream(); // получаем поток
+                MessageGateway mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "PointToPoint", "123456789");
                 while (true)
                 {
                     Console.Write("Начало отправки: ");
                     //=================================
-                    MessageGateway mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "PointToPoint", "123456789");
                     string message = JsonSerializer.Serialize(mesObj);
                     byte[] data = Encoding.Unicode.GetBytes(message);
                     stream.Write(data, 0, data.Length);
                     //=================================
-                    Thread.Sleep(5000);
+                    Thread.Sleep(1000);
                 }
             }
             catch (Exception ex)
