@@ -39,12 +39,12 @@ namespace ConsoleAppBus
             {
                 tcpListener = new TcpListener(IPAddress.Parse(_OuterBus.SettingsBase.ConnectionBus._IP), _OuterBus.SettingsBase.ConnectionBus._Port);
                 tcpListener.Start();
-                Console.WriteLine("Шлюз запущен. Ожидание подключений...");
+                Console.WriteLine("Шлюз запущен. Ожидание подключений...\n");
 
                 while (true)
                 {
                     TcpClient client = tcpListener.AcceptTcpClient();
-                    Console.WriteLine("Новое соединение...");
+                    Console.WriteLine("Новое соединение... "+ client.ToString() + "...\n");
                     GatewayClientObjectBinary clientObject = new GatewayClientObjectBinary(client, _OuterBus);
                     // создаем новый поток для обслуживания нового клиента
                     Task clientTask = new Task(clientObject.Process);
@@ -88,10 +88,15 @@ namespace ConsoleAppBus
             // создаем по полученным от клиента данным объект счета
             string s1 = GetMessage();
             _messageGateway = _OuterBus.SettingsBase.GetMessageQueue(s1);
+            //
+            Console.WriteLine("Client - {1}, Client.GenerateGuid - {0}",
+                _messageGateway.GenerateGuid, _messageGateway._idProducer);
+            Console.WriteLine("\n");
             //========================================================================================
-            Console.WriteLine("{0} зарегистрировано сообщение: {1}, типа {2}", _messageGateway.QueueMessage, _messageGateway.TailMessage, _messageGateway.TypeMessage);
-            //=========================================================================================================================================================
-            //BroadcastMessage(JsonConvert.SerializeObject(_messageGateway));
+            Console.WriteLine("QueueMessage={0}; зарегистрировано сообщение: {1}, типа {2}", 
+                _messageGateway.QueueMessage, _messageGateway.TailMessage, _messageGateway.TypeMessage);
+            Console.WriteLine("\n");
+            //========================================================================================
             RoutingMessageGatewayClientObjectToBus();
             Thread.Sleep(10);
         }
@@ -137,7 +142,7 @@ namespace ConsoleAppBus
 
                     //-------------------------------------------
                     Console.ForegroundColor = ConsoleColor.Green;
-                    Console.WriteLine("Клиент вышел из Process");
+                    Console.WriteLine("Клиент вышел из Process\n");
                     Console.ResetColor();
                     //-------------------
                 }
@@ -147,20 +152,19 @@ namespace ConsoleAppBus
                 }
             }
         }
-
+        //Exchange
         private void RoutingMessageGatewayClientObjectToBus()
         {
             if (GetMessageGateway() != null)
             {
                 if (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.PointToPoint)
                 {
-                    Console.WriteLine("Регистрация Produser: ");
-                    //_OuterBus.AddGatewayClientObjectBinaryToDic(this);
+                    Console.WriteLine("RoutingMessage Produser:\n");
                     _OuterBus.AddMessageToQueue(GetMessageGateway());
                 }
                 else if (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.Subscription)
                 {
-                    Console.WriteLine("Регистрация Consumer: ");
+                    Console.WriteLine("RoutingMessage Consumer:\n");
                     _OuterBus.AddGatewayClientObjectToQueue(this);
                 }
                 else if (GetMessageGateway().TypeMessage == ClassLibraryBusExpansion.Routing_Key.RequestResponse)

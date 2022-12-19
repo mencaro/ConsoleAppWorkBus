@@ -49,8 +49,8 @@ namespace ConsoleAppProducerBus
                     byte[] data = Encoding.Unicode.GetBytes(message);
                     stream.Write(data, 0, data.Length);
                     //=================================
-                    Thread.Sleep(1000);
-                    _TileMess = rnd.Next().ToString();
+                    Thread.Sleep(rnd.Next(10,1000));
+                    mesObj.TailMessage = rnd.Next().ToString();
                 }
             }
             catch (Exception ex)

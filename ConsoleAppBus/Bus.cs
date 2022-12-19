@@ -33,7 +33,7 @@ namespace ConsoleAppBus
             SettingsBase.GetSettings();
             if (ValidateSettingsBus())
             {
-                Console.WriteLine("settings On");
+                Console.WriteLine("settings On\n");
                 CreateQueue();
                 StartGateway();
             }

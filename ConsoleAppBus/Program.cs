@@ -8,7 +8,7 @@ namespace ConsoleAppBus
         static Bus bus = null;
         static void Main(string[] args)
         {
-            Console.WriteLine("Start Bus Work!");
+            Console.WriteLine("Start Bus Work!\n");
             //--------------
             bus = new Bus();
             //-----------------

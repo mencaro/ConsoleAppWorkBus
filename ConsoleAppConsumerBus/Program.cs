@@ -22,7 +22,16 @@ namespace ConsoleAppConsumerBus
             Console.ReadLine();
             Guid _guid = Guid.NewGuid();
             _guid = Guid.NewGuid();
-            MessageGateway mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "Subscription", "");
+            MessageGateway mesObj;
+            if (args.Length > 0)
+            {
+                mesObj = new MessageGateway(_guid.ToString(), args[0].ToString(), "Subscription", "");
+            }
+            else
+            {
+                mesObj = new MessageGateway(_guid.ToString(), "d6f7cdf4-97eb-46c2-9edd-8b9e468e4f43", "Subscription", "");
+            }
+                
             client = new TcpClient();
             try
             {

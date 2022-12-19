@@ -16,11 +16,11 @@ namespace ConsoleAppProducerBus
             if (args.Length > 0)
             {
                 Console.WriteLine(args[0].ToString());
-                id = args[0];
-                Random rnd = new Random();
-                mess = rnd.Next().ToString();
+                //id = args[0];
+                //Random rnd = new Random();
+                //mess = rnd.Next().ToString();
 
-                pb.SetMessage(id, mess);
+                pb.SetMessage(args[0].ToString(), "PointToPoint");
             }
             else
             {

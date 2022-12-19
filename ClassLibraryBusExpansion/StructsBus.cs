@@ -10,10 +10,11 @@ namespace ClassLibraryBusExpansion
 
     public enum Routing_Key
     {
-        PointToPoint,// точка-точка
-        Subscription,//подписка
-        RequestResponse//запрос - ответ
+        PointToPoint,   // точка - точка
+        Subscription,   // подписка
+        RequestResponse // запрос - ответ
     }
+    //Fanout;Direct;Topic;Headers.
 
     [Serializable]
     public class MessageGateway
@@ -39,13 +40,6 @@ namespace ClassLibraryBusExpansion
         /// </summary>
         public string TailMessage { get; set; }
 
-        //public MessageGateway(string idQueueMessage, string typeMessage, string idTailMessage)
-        //{
-        //    QueueMessage = idQueueMessage;
-        //    TailMessage = idTailMessage;
-        //    GenerateGuid = Guid.NewGuid();
-        //    GenerateTypeForMessage(typeMessage);
-        //}
         public MessageGateway(string idProducer, string idQueueMessage, string typeMessage, string idTailMessage)
         {
             _idProducer = idProducer;
@@ -53,10 +47,6 @@ namespace ClassLibraryBusExpansion
             TailMessage = idTailMessage;
             GenerateGuid = Guid.NewGuid();
             GenerateTypeForMessage(typeMessage);
-        }
-        private string GetSGenerateGuidForMessage()
-        {
-            return GenerateGuid.ToString();
         }
         private void GenerateTypeForMessage(string type)
         {
