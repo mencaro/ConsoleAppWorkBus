@@ -18,3 +18,9 @@ ConsoleAppTestStart/obj/
 
 ConsoleAppTestFunction/bin/
 ConsoleAppTestFunction/obj/
+
+ConsoleAppTestServer/bin/
+ConsoleAppTestServer/obj/
+
+ConsoleAppTestClient/bin/
+ConsoleAppTestClient/obj/
